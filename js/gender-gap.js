@@ -14,10 +14,10 @@ async function createViz(){
       width:  1200,
       height: 600,
       margin: {
-        top: 30,
+        top: 60,
         right: 30,
         bottom: 50,
-        left: 60,
+        left: 90,
       },
     }
 
@@ -73,32 +73,108 @@ dataset.forEach(datum => {
   //   }
   // }
 
-  console.log(bins)
+  // console.log(bins)
+
+  const sportGenderBins = d3.group(bins, d => d.sport, d => d.gender)
+
 
   //Generate scales
 
+
+  const binSizes = bins.map(d => d.bins.map(datum => datum.length)).flat()
+
+  const earnings = dataset.map(d=> d.earnings_USD_2019)
+
   const yScale = d3.scaleLinear()
-  .domain([0,dataset.earnings_USD_2019])
+  .domain([0,d3.max(earnings)])
   .range([dimensions.boundedHeight,0])
+  .nice()
 
-  const xScale = d3.scaleLinear()
-  .domain([0, d3.max(bins.map(d => d.bins.map(datum => datum.length)).flat())])
-  .range([0,60])
+  const xScale = d3.scaleBand()
+  .range([ 0, dimensions.boundedWidth])
+  .domain(["basketball", "golf", "tennis"])
+  .padding(0.05)
 
-  console.log(bins.map(d => d.bins.map(datum => datum.length)).flat())
+  const xNum = d3.scaleLinear()
+  .domain([-d3.max(binSizes), d3.max(binSizes)])
+  .range([0,xScale.bandwidth()])
+
+  // console.log(bins.map(d => d.bins.map(datum => datum.length)).flat())
 
   // Generate axes
 
   const yAxisGenerator = d3.axisLeft().scale(yScale)
 
-distChart.append('line')
-  .attr('x1',0)
-  .attr('y1',dimensions.boundedHeight)
-  .attr('x2',dimensions.boundedWidth)
-  .attr('y2',dimensions.boundedHeight)
-  .attr('stroke', 'black')
-  .attr('stroke-width',1)
+  const yAxis = distChart.append('g')
+  .call(yAxisGenerator)
+  .attr("class", "axis")
 
-};
+  yAxis.append("text")
+  .style("fill", "black")
+  .attr("x", -dimensions.margin.left)
+  .attr("y", -dimensions.margin.top/2)
+  .text("Earnings in 2019 (USD)")
+  .style("text-anchor", "start")
+  .style("font-size", "1.2rem")
+
+  const xAxisGenerator = d3.axisBottom().scale(xScale)
+
+  const xAxis = distChart.append('g')
+  .call(xAxisGenerator)
+  .style('transform', `translate(${0}px, ${dimensions.boundedHeight}px)`)
+  .style("font-size", ".8rem")
+
+  // append('line')
+  //   .attr('x1',0)
+  //   .attr('y1',dimensions.boundedHeight)
+  //   .attr('x2',dimensions.boundedWidth)
+  //   .attr('y2',dimensions.boundedHeight)
+  //   .attr('stroke', 'black')
+  //   .attr('stroke-width',1)
+  //   .attr('shape-rendering','crispEdges')
+  //   .style("transform",`translateX(8px)`)
+
+
+
+
+    // Create area generators
+
+    const menAreaGenerator = d3.area()
+    .x0(xNum(0))
+    .x1(d=> xNum(d.length))
+    .y(d => yScale(d.x0))
+    .curve(d3.curveCatmullRom)
+
+    const womenAreaGenerator = d3.area()
+    .x0(d => xNum(-d.length))
+    .x1(xNum(0))
+    .y(d => yScale(d.x0))
+    .curve(d3.curveCatmullRom)
+
+    function drawMapElements(value, key, map) {
+      distChart.append('g')
+      .append('path')
+      .attr('d', menAreaGenerator(sportGenderBins.get(key).get('men')[0].bins))
+      .style("fill", colorMen)
+      .style('stroke', 'none')
+      .style('transform', `translate(${xScale(key)}px,0px)`)
+
+      distChart.append('g')
+      .append('path')
+      .attr('d', womenAreaGenerator(sportGenderBins.get(key).get('women')[0].bins))
+      .style("fill", colorWomen)
+      .style('stroke', 'none')
+      .style('transform', `translate(${xScale(key)}px,0px)`)
+}
+
+    sportGenderBins.forEach(drawMapElements)
+
+
+  };
+
+
+
+
+
 
 createViz();
