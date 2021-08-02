@@ -73,7 +73,7 @@ dataset.forEach(datum => {
   //   }
   // }
 
-  // console.log(bins)
+  console.log(bins)
 
   const sportGenderBins = d3.group(bins, d => d.sport, d => d.gender)
 
@@ -98,6 +98,7 @@ dataset.forEach(datum => {
   const xNum = d3.scaleLinear()
   .domain([-d3.max(binSizes), d3.max(binSizes)])
   .range([0,xScale.bandwidth()])
+
 
   // console.log(bins.map(d => d.bins.map(datum => datum.length)).flat())
 
@@ -134,9 +135,6 @@ dataset.forEach(datum => {
   //   .attr('shape-rendering','crispEdges')
   //   .style("transform",`translateX(8px)`)
 
-
-
-
     // Create area generators
 
     const menAreaGenerator = d3.area()
@@ -151,27 +149,75 @@ dataset.forEach(datum => {
     .y(d => yScale(d.x0))
     .curve(d3.curveCatmullRom)
 
+//// Alternate charting method
+    // distChart
+    // .append('g')
+    //   .attr('class', 'violins')
+    // .selectAll('.violin')
+    // .data(bins)
+    // .join('path')
+    //   .attr('class', d => `violin violin-${d.sport} violin-${d.gender}`)
+    //   .attr('d', d => d.gender === 'women' ? womenAreaGenerator(d.bins) : menAreaGenerator(d.bins))
+    //   .attr('transform', d => {
+    //     return `translate(${xScale(d.sport)}, 0)`; // The margin.left part of the translation is applied in the areaGenerator functions to avoid negative x values for women
+    //   })
+    //   .attr('fill', d => d.gender === 'women' ? colorWomen : colorMen)
+    //   .attr('fill-opacity', 0.8)
+    //   .attr('stroke', 'none');
+//
     function drawMapElements(value, key, map) {
       distChart.append('g')
       .append('path')
       .attr('d', menAreaGenerator(sportGenderBins.get(key).get('men')[0].bins))
-      .style("fill", colorMen)
+      .style("fill", colorMen+'88')
       .style('stroke', 'none')
       .style('transform', `translate(${xScale(key)}px,0px)`)
 
       distChart.append('g')
       .append('path')
       .attr('d', womenAreaGenerator(sportGenderBins.get(key).get('women')[0].bins))
-      .style("fill", colorWomen)
+      .style("fill", colorWomen+'88')
       .style('stroke', 'none')
       .style('transform', `translate(${xScale(key)}px,0px)`)
 }
 
     sportGenderBins.forEach(drawMapElements)
 
+    // Draw individual colorMenCircles
+    const circleRadius = 2.5;
+    const circlesPadding = 0.7;
 
-  };
 
+    const tennisDataMen = dataset.filter(d => d.sport == 'tennis' && d.gender == 'men')
+
+
+    const simulation = d3.forceSimulation(tennisDataMen)
+    .force('forceX', d3.forceX(xNum(0)).strength(0.1))
+    .force('foreceY', d3.forceY(d => yScale(d.earnings_USD_2019)).strength(10))
+    .force('collide', d3.forceCollide(circleRadius + circlesPadding))
+    .stop();
+
+    const numIterations = 300;
+    for (let i = 0; i < numIterations; i++)
+    {simulation.tick();
+  }
+
+    simulation.stop();
+
+    console.log(tennisDataMen)
+
+    distChart.append('g')
+    .selectAll('.circle-men')
+    .data(tennisDataMen)
+    .join('circle')
+    .attr('class', '.circle-men')
+    .attr('cx', d => d.x)
+    .attr('cy', d => d.y)
+    .attr('r', circleRadius)
+    .attr('fill', colorMenCircles)
+    .style('transform', `translate(${xScale('tennis')}px,0px)`)
+
+};
 
 
 
