@@ -1,6 +1,3 @@
-// const margin = {top: 30, right: 20, bottom: 50, left: 60};
-// const width = 1200;
-// const height = 600;
 const colorMen = '#F2C53D';
 const colorWomen = '#A6BF4B';
 const colorMenCircles = '#BF9B30';
@@ -62,6 +59,7 @@ dataset.forEach(datum => {
     });
   });
 
+  //// Another way to  create binsSet
   // for (let index = 0; index < sports.length; index++){
   //   for (let indexj = 0; indexj < genders.length; indexj++){
   //     const binsSet = await {
@@ -97,9 +95,6 @@ dataset.forEach(datum => {
   .domain([-d3.max(binSizes), d3.max(binSizes)])
   .range([0,xScale.bandwidth()])
 
-
-  // console.log(bins.map(d => d.bins.map(datum => datum.length)).flat())
-
   // Generate axes
 
   const yAxisGenerator = d3.axisLeft().scale(yScale)
@@ -123,16 +118,6 @@ dataset.forEach(datum => {
   .style('transform', `translate(${0}px, ${dimensions.boundedHeight}px)`)
   .style("font-size", ".8rem")
 
-  // append('line')
-  //   .attr('x1',0)
-  //   .attr('y1',dimensions.boundedHeight)
-  //   .attr('x2',dimensions.boundedWidth)
-  //   .attr('y2',dimensions.boundedHeight)
-  //   .attr('stroke', 'black')
-  //   .attr('stroke-width',1)
-  //   .attr('shape-rendering','crispEdges')
-  //   .style("transform",`translateX(8px)`)
-
     // Create area generators
 
     const menAreaGenerator = d3.area()
@@ -147,7 +132,7 @@ dataset.forEach(datum => {
     .y(d => yScale(d.x0))
     .curve(d3.curveCatmullRom)
 
-//// Alternate charting method
+//// Alternate charting method for violin plots
     // distChart
     // .append('g')
     //   .attr('class', 'violins')
@@ -184,22 +169,6 @@ dataset.forEach(datum => {
     // Draw individual colorMenCircles
     const circleRadius = 2.5;
     const circlesPadding = 0.7;
-
-
-    // const tennisDataMen = dataset.filter(d => d.sport == 'tennis' && d.gender == 'men')
-    // console.log(tennisDataMen)
-
-  //   const simulation = d3.forceSimulation(dataset)
-  //   .force('x', d3.forceX( d =>
-  //     { if(d.gender == 'men'){
-  //       return (d.x < xNum(0) ? xNum(1.5): xNum(0))
-  //     }
-  //       else {
-  //       return (d.x > xNum(-1) ? xNum(-10): xNum(-1))
-  //       }
-  //     }
-  //   ).strength(0.1)
-  // )
 
     const simulation = d3.forceSimulation(dataset)
     .force('x', d3.forceX(d => xNum(0)).strength(0.1))
