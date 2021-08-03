@@ -56,7 +56,7 @@ dataset.forEach(datum => {
       const binsSet = {
         sport: sport,
         gender: gender,
-        bins: d3.bin().thresholds(5)(dataset.filter(d => d.sport == sport && d.gender == gender).map(d => d.earnings_USD_2019)) // bin the earnings for a given sport-gender combination
+        bins: d3.bin()(dataset.filter(d => d.sport == sport && d.gender == gender).map(d => d.earnings_USD_2019)) // bin the earnings for a given sport-gender combination
       };
       bins.push(binsSet);
     });
@@ -72,8 +72,6 @@ dataset.forEach(datum => {
   //     bins.push(binsSet);
   //   }
   // }
-
-  console.log(bins)
 
   const sportGenderBins = d3.group(bins, d => d.sport, d => d.gender)
 
@@ -188,14 +186,42 @@ dataset.forEach(datum => {
     const circlesPadding = 0.7;
 
 
-    const tennisDataMen = dataset.filter(d => d.sport == 'tennis' && d.gender == 'men')
+    // const tennisDataMen = dataset.filter(d => d.sport == 'tennis' && d.gender == 'men')
+    // console.log(tennisDataMen)
 
+  //   const simulation = d3.forceSimulation(dataset)
+  //   .force('x', d3.forceX( d =>
+  //     { if(d.gender == 'men'){
+  //       return (d.x < xNum(0) ? xNum(1.5): xNum(0))
+  //     }
+  //       else {
+  //       return (d.x > xNum(-1) ? xNum(-10): xNum(-1))
+  //       }
+  //     }
+  //   ).strength(0.1)
+  // )
 
-    const simulation = d3.forceSimulation(tennisDataMen)
-    .force('forceX', d3.forceX(xNum(0)).strength(0.1))
-    .force('foreceY', d3.forceY(d => yScale(d.earnings_USD_2019)).strength(10))
-    .force('collide', d3.forceCollide(circleRadius + circlesPadding))
+    const simulation = d3.forceSimulation(dataset)
+    .force('x', d3.forceX(d => xNum(0)).strength(0.1))
+    .force('y', d3.forceY(d => yScale(d.earnings_USD_2019)).strength(10))
+    .force('collide', d3.forceCollide().strength(0.2).radius(circleRadius + circlesPadding))
+    .force('axis', () => {
+    dataset.forEach(datum => {
+       if (datum.gender == 'men' && datum.x < xNum(0)) {
+          datum.vx += 0.01 * datum.x;
+       }
+       if (datum.gender == 'women' && datum.x > xNum(0)) {
+          datum.vx -= 0.15 * datum.x;
+       }
+       if (Math.abs(datum.y-yScale(0)) < 0.005*datum.y) {
+          datum.vy -= 0.0005 * datum.y;
+       }
+    });
+ })
     .stop();
+
+    console.log(Math.abs(yScale(53616)-yScale(0))/yScale(53616))
+
 
     const numIterations = 300;
     for (let i = 0; i < numIterations; i++)
@@ -203,24 +229,21 @@ dataset.forEach(datum => {
   }
 
     simulation.stop();
+    console.log(dataset)
 
-    console.log(tennisDataMen)
 
     distChart.append('g')
-    .selectAll('.circle-men')
-    .data(tennisDataMen)
+    .selectAll('.circles')
+    .data(dataset)
     .join('circle')
-    .attr('class', '.circle-men')
+    .attr('class', d => `circles-${d.gender}-${d.sport}`)
     .attr('cx', d => d.x)
     .attr('cy', d => d.y)
     .attr('r', circleRadius)
-    .attr('fill', colorMenCircles)
-    .style('transform', `translate(${xScale('tennis')}px,0px)`)
+    .attr('fill', d => d.gender === 'women' ? colorWomen : colorMen)
+    .style('transform', d => `translate(${xScale(d.sport)}px,0px)`)
 
 };
-
-
-
 
 
 createViz();
