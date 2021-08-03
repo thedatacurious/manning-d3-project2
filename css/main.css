@@ -51,8 +51,8 @@ a {
 /* Tooltip */
 .tooltip {
   position: absolute;
-  top: -9000rem;
-  left: -9000rem;
+  /* top: -9000rem;
+  left: -9000rem; */
   padding: 10px 15px;
   background-color: rgba(176,176,171, 0.8);
   border-radius: 3px;

@@ -212,7 +212,39 @@ dataset.forEach(datum => {
     .attr('fill', d => d.gender === 'women' ? colorWomen : colorMen)
     .style('transform', d => `translate(${xScale(d.sport)}px,0px)`)
 
-};
+  // Add interactions
 
+  d3.selectAll('circle')
+    .on('mouseenter', handleMouseOver)
+    .on('mouseleave', handleMouseOut)
+
+
+  const tooltip = d3.select('div.tooltip')
+
+ function handleMouseOver(event, d){
+
+    console.log(event.pageX)
+
+    tooltip.classed('visible', true)
+    .style('top', event.pageX)
+    .style('left', event.pageY)
+
+    tooltip.select('div.name')
+    .text(d.name)
+
+    tooltip.select('div.sport')
+    .text(d.sport)
+
+    tooltip.select('span.salary')
+    .text(d.earnings_USD_2019)
+
+  }
+
+  function handleMouseOut(event,d){
+     tooltip.classed('visible', false)
+  }
+
+
+};
 
 createViz();
