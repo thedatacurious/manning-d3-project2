@@ -254,15 +254,15 @@ dataset.forEach(datum => {
     +`)`)
 
     tooltip.select('div.name')
-    .text(d.name)
+    .html(d.name)
 
     tooltip.select('div.sport')
-    .text(d.sport)
+    .html(d.sport)
     .style('text-transform','capitalize');
 
 
     tooltip.select('span.salary')
-    .text('$'+internationalNumberFormat.format(d.earnings_USD_2019))
+    .html('$'+internationalNumberFormat.format(d.earnings_USD_2019))
 
   }
 
