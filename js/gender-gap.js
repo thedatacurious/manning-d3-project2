@@ -37,7 +37,7 @@ async function createViz(){
  const dataset = await d3.csv('./data/pay_by_gender_all.csv')
 
 dataset.forEach(datum => {
-    datum['earnings_USD_2019'] = +datum['earnings_USD_2019'].replace(",","").replace(",","")
+    datum['earnings_USD_2019'] = +datum['earnings_USD_2019'].replaceAll(",","")
   });
 
 
@@ -117,6 +117,7 @@ dataset.forEach(datum => {
   .call(xAxisGenerator)
   .style('transform', `translate(${0}px, ${dimensions.boundedHeight}px)`)
   .style("font-size", ".8rem")
+  .style('text-transform','capitalize');
 
     // Create area generators
 
@@ -220,23 +221,30 @@ dataset.forEach(datum => {
 
 
   const tooltip = d3.select('div.tooltip')
+  internationalNumberFormat = new Intl.NumberFormat('en-US')
 
  function handleMouseOver(event, d){
 
-    console.log(event.pageX)
+   console.log(d.sport)
+
 
     tooltip.classed('visible', true)
-    .style('top', event.pageX)
-    .style('left', event.pageY)
+    .style("pointer-events", "none")
+    .style('transform', `translate(${(d.x + xScale(d.sport))}px,`
+    +
+    `calc(-50% + ${d.y}px)`
+    +`)`)
 
     tooltip.select('div.name')
     .text(d.name)
 
     tooltip.select('div.sport')
     .text(d.sport)
+    .style('text-transform','capitalize');
+
 
     tooltip.select('span.salary')
-    .text(d.earnings_USD_2019)
+    .text('$'+internationalNumberFormat.format(d.earnings_USD_2019))
 
   }
 

@@ -64,10 +64,15 @@ a {
   opacity: 1;
   transition-timing-function: ease-in-out;
 }
-.tooltip div {
+.tooltip
+div {
   margin: 3px 0;
 }
 .tooltip .name,
 .tooltip .salary {
   font-weight: 700;
+}
+
+#viz{
+  position: relative;
 }
