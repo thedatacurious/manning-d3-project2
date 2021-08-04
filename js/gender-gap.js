@@ -151,16 +151,18 @@ dataset.forEach(datum => {
 //
     function drawMapElements(value, key, map) {
       distChart.append('g')
+      .attr('class', 'violin-plot')
       .append('path')
       .attr('d', menAreaGenerator(sportGenderBins.get(key).get('men')[0].bins))
-      .style("fill", colorMen+'88')
+      .style("fill", colorMen+'66')
       .style('stroke', 'none')
       .style('transform', `translate(${xScale(key)}px,0px)`)
 
       distChart.append('g')
+      .attr('class', 'violin-plot')
       .append('path')
       .attr('d', womenAreaGenerator(sportGenderBins.get(key).get('women')[0].bins))
-      .style("fill", colorWomen+'88')
+      .style("fill", colorWomen+'66')
       .style('stroke', 'none')
       .style('transform', `translate(${xScale(key)}px,0px)`)
 }
@@ -210,8 +212,24 @@ dataset.forEach(datum => {
     .attr('cx', d => d.x)
     .attr('cy', d => d.y)
     .attr('r', circleRadius)
-    .attr('fill', d => d.gender === 'women' ? colorWomen : colorMen)
+    .attr('fill', d => d.gender === 'women' ? colorWomenCircles : colorMenCircles)
     .style('transform', d => `translate(${xScale(d.sport)}px,0px)`)
+
+  // Add legend
+
+  var legend = d3.select('div.legend').style('transform', d => `translate(120px,${dimensions.margin.top*2}px)`)
+
+  var entries = legend.append('ul')
+  .selectAll('li')
+  .data([{gender:'Women'}, {gender:'Men'}])
+  .join('li')
+
+  entries.append('span')
+  .attr('class','legend-block')
+  .style('background-color', d => d.gender === 'Women' ? colorWomen : colorMen)
+
+  entries.append('span')
+  .text(d => d.gender)
 
   // Add interactions
 
@@ -232,7 +250,7 @@ dataset.forEach(datum => {
     .style("pointer-events", "none")
     .style('transform', `translate(${(d.x + xScale(d.sport))}px,`
     +
-    `calc(-50% + ${d.y}px)`
+    `calc(20% + ${d.y}px)`
     +`)`)
 
     tooltip.select('div.name')
@@ -251,6 +269,32 @@ dataset.forEach(datum => {
   function handleMouseOut(event,d){
      tooltip.classed('visible', false)
   }
+
+  // Add glow effect
+
+  // Append definitions to container for effect
+  const defs = wrapper.append('defs')
+
+  // Add svg filter
+  const filter = defs.append('filter')
+  .attr('id', 'glow');
+
+  filter.append('feGaussianBlur')
+  .attr('stdDeviation', '4.5')
+  .attr('result', 'coloredBlur')
+
+  // Method to combine blurred and original image for glow
+  const feMerge = filter.append('feMerge')
+
+  feMerge.append('feMergeNode')
+  .attr('in', 'coloredBlur');
+
+  feMerge.append('feMergeNode')
+  .attr('in', 'SourceGraphic')
+
+  // Call svg filter from violin plot path
+  d3.selectAll('.violin-plot')
+  .style('filter','url(#glow)')
 
 
 };
